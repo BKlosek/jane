@@ -26,7 +26,7 @@ public class JaneHandler implements RequestStreamHandler {
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-        context.getLogger().log("Request recieved");
+        context.getLogger().log("Request received");
         String request = IOUtils.toString(inputStream);
         RequestEnvelope requestEnvelope = new JacksonSerializer().deserialize(request, RequestEnvelope.class);
         ResponseEnvelope responseEnvelope = this.skill.invoke(requestEnvelope);
