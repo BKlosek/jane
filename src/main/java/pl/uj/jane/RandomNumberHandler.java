@@ -14,7 +14,7 @@ public class RandomNumberHandler implements RequestHandler {
 
     @Override
     public Optional<Response> handle(HandlerInput handlerInput) {
-        Destination dest = new CityConnectionsSearcher().RetrieveItem("AAA");
+        Destination dest = new CityConnectionsSearcher().RetrieveItem("AAE");
         String weather = new WeatherReader().checkWeather(dest.getLat(), dest.getLong());
         if (dest != null && weather != null){
             return handlerInput.getResponseBuilder().withSpeech("BAJO JAJO " + dest.getName() + " " + weather).build();

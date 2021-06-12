@@ -31,7 +31,7 @@ public class CityConnectionsSearcher {
 
     public Destination RetrieveItem(String IATA) {
 
-        GetItemSpec spec = new GetItemSpec().withPrimaryKey("ID", 1);
+        GetItemSpec spec = new GetItemSpec().withPrimaryKey("ID", 5);
 
         try{
             Item outcome = table.getItem(spec);
