@@ -14,15 +14,14 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 // Import log4j classes.
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import pl.uj.jane.dto.Destination;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Objects;
 
 public class CityConnectionsSearcher {
 
     private static final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
-            .withRegion(Regions.US_EAST_2).build();
+            .withRegion(Regions.US_EAST_1).build();
     private static DynamoDB dynamoDB = new DynamoDB(client);
 
     private static final Table table = dynamoDB.getTable("airportConnectionTable");

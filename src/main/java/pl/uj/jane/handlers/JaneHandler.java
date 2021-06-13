@@ -1,4 +1,4 @@
-package pl.uj.jane;
+package pl.uj.jane.handlers;
 
 import com.amazon.ask.Skill;
 import com.amazon.ask.builder.StandardSkillBuilder;
@@ -20,7 +20,7 @@ public class JaneHandler implements RequestStreamHandler {
     private final JacksonSerializer jacksonSerializer;
 
     public JaneHandler() {
-        this.skill = new StandardSkillBuilder().addRequestHandler(new RandomNumberHandler()).build();
+        this.skill = new StandardSkillBuilder().addRequestHandler(new RandomNumberHandler()).addRequestHandler(new LaunchRequestHandlerImpl()).build();
         this.jacksonSerializer = new JacksonSerializer();
     }
 

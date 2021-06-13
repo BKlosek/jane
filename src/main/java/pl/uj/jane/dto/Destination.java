@@ -1,4 +1,4 @@
-package pl.uj.jane;
+package pl.uj.jane.dto;
 
 public class Destination {
     private String IATA = "";
