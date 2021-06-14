@@ -12,8 +12,8 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 //import org.slf4j.LoggerFactory;
 
 // Import log4j classes.
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+//import org.apache.logging.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
 import pl.uj.jane.dto.Destination;
 
 import java.util.Objects;
@@ -26,7 +26,7 @@ public class CityConnectionsSearcher {
 
     private static final Table table = dynamoDB.getTable("airportConnectionTable");
 
-    private static final Logger LOGGER = LogManager.getLogger(CityConnectionsSearcher.class);
+//    private static final Logger LOGGER = LogManager.getLogger(CityConnectionsSearcher.class);
 
     public Destination RetrieveItem(String IATA) {
 
@@ -44,7 +44,7 @@ public class CityConnectionsSearcher {
                 return dest;
             }
         }catch (Exception e){
-            LOGGER.error("An exception has occurred while retrieving an item:  ", e);
+//            LOGGER.error("An exception has occurred while retrieving an item:  ", e);
             return null;
         }
 
