@@ -14,16 +14,36 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Mock class to handle Activity intent from Jane.
+ */
+
 public class JaneHandler implements RequestStreamHandler {
 
+    /**
+     * A skill that is being passed.
+     */
     private final Skill skill;
+    /**
+     * Library serialization / deserialization tool.
+     */
     private final JacksonSerializer jacksonSerializer;
 
+    /**
+     * Default constructor defining a skill from the incoming request.
+     */
     public JaneHandler() {
         this.skill = new StandardSkillBuilder().addRequestHandler(new RandomNumberHandler()).addRequestHandler(new LaunchRequestHandlerImpl()).build();
         this.jacksonSerializer = new JacksonSerializer();
     }
 
+    /**
+     * The method with a mock handle method
+     * @param inputStream
+     * @param outputStream
+     * @param context
+     * @throws IOException
+     */
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
         context.getLogger().log("Request received");

@@ -15,10 +15,21 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class makes queries to WikiData service.
+ */
+
 public class WikiData {
 
+    /**
+     * This is the main and the only method of this class. it queries WikiData service and returns a list
+     * of artists associated with this genre of art.
+     * @param queryString String containing query for WikiData service
+     * @return A list or objects of type Artist
+     */
+
     public List<Artist> queryWikiData(String queryString) {
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper(); // a technical onbject necessary to make SPARQL queries
         List<Artist> artistList = new ArrayList<>();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Query query = QueryFactory.create(queryString);

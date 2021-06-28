@@ -1,10 +1,23 @@
 package pl.uj.jane.dto;
 
+/**
+ * The class representing an airport defined in DynamoDB database. It is treated as a destination.
+ */
 public class Destination {
+
+    /**
+     * IATA code of the airport.
+     */
     private String IATA = "";
+    /**
+     * Municipality in which this airport is situated.
+     */
     private String Municipality = "";
     private double Lat = 0;
     private double Lon = 0;
+    /**
+     * Name of the airport.
+     */
     private String name = "";
 
     public String getIATA() {

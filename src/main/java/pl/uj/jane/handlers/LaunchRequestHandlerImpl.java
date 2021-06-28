@@ -10,6 +10,7 @@ import java.util.Optional;
 import static com.amazon.ask.request.Predicates.requestType;
 
 public class LaunchRequestHandlerImpl implements LaunchRequestHandler {
+
     @Override
     public boolean canHandle(HandlerInput handlerInput, LaunchRequest launchRequest) {
         return handlerInput.matches(requestType(LaunchRequest.class));

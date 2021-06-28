@@ -18,16 +18,37 @@ import pl.uj.jane.dto.Destination;
 
 import java.util.Objects;
 
+/**
+ * Class retrieving connections from  DynamoDB and searching for connections in the retrieved data
+ */
+
 public class CityConnectionsSearcher {
 
+    /**
+     * A library method that establishes communication with AWS. It reads data from a default file with
+     * credentials usually defined in "Documents\\.aws". That file is generated via AWS CLI that needs
+     * to be installed prior.
+     */
     private static final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
             .withRegion(Regions.US_EAST_1).build();
+    /**
+     * A library class specific for DynamoDB connection on AWS.
+     */
     private static DynamoDB dynamoDB = new DynamoDB(client);
 
+    /**
+     * A library class representing a table from DynamoDB.
+     */
     private static final Table table = dynamoDB.getTable("airportConnectionTable");
 
 //    private static final Logger LOGGER = LogManager.getLogger(CityConnectionsSearcher.class);
 
+    /**
+     * Given an IATA code this method retrieves a record from a DynamoDB table by the code provided. Then it
+     * converts the retrieved item into
+     * @param IATA The IATA code of the airport. Theoretically retrieved from "LinkedGeoData" service.
+     * @return Returns an object of class Destination containing all information about the destination airport.
+     */
     public Destination RetrieveItem(String IATA) {
 
         GetItemSpec spec = new GetItemSpec().withPrimaryKey("ID", 5);
@@ -51,22 +72,5 @@ public class CityConnectionsSearcher {
         return null;
 
     }
-
-    public ItemCollection<QueryOutcome> RetrieveItems(String attributeName, String value){
-
-        QuerySpec spec = new QuerySpec()
-                .withKeyConditionExpression(attributeName + " = :" + attributeName)
-                .withValueMap(new ValueMap()
-                        .withString(":v_" + attributeName, value));
-
-        ItemCollection<QueryOutcome> items = table.query(spec);
-
-        for (Item item : items) {
-            System.out.println(item.toJSONPretty());
-        }
-
-        return items;
-    }
-
 
 }
