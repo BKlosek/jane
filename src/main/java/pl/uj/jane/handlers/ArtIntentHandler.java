@@ -5,12 +5,10 @@ import com.amazon.ask.dispatcher.request.handler.impl.IntentRequestHandler;
 import com.amazon.ask.model.IntentRequest;
 import com.amazon.ask.model.Response;
 import com.amazon.ask.model.Slot;
-import com.sun.tools.javadoc.Start;
 import lombok.AllArgsConstructor;
 import pl.uj.jane.CityConnectionsSearcher;
 import pl.uj.jane.WikiData;
 import pl.uj.jane.dto.Airport;
-import pl.uj.jane.dto.Artist;
 import pl.uj.jane.dto.LocationWithQuantity;
 import pl.uj.jane.utils.TypeOfQuery;
 
@@ -19,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.amazon.ask.request.Predicates.requestType;
-import static pl.uj.jane.utils.Queries.ARTISTS_LIST;
 import static pl.uj.jane.utils.Queries.UNKNOWN_ART_INTENT;
 import static pl.uj.jane.utils.Queries.fillQueryWithParameters;
 
@@ -36,6 +33,7 @@ public class ArtIntentHandler implements IntentRequestHandler {
 
     /**
      * Jane intent handlers need to have a method checking if the input can be handled by thin intent.
+     *
      * @param handlerInput
      * @param intentRequest
      * @return Boolean value of whether this request can be handled.
@@ -48,6 +46,7 @@ public class ArtIntentHandler implements IntentRequestHandler {
 
     /**
      * The method that should actually handle the intent request.
+     *
      * @param handlerInput
      * @param intentRequest
      * @return Boolean value of whether this request can be handled.
@@ -75,7 +74,7 @@ public class ArtIntentHandler implements IntentRequestHandler {
 //            return handleArtMovement();
 //        }
 //        else {
-            handleUnknownArtIntent();
+        handleUnknownArtIntent();
 //        }
 
         return "";
