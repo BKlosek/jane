@@ -3,19 +3,25 @@ package pl.uj.jane;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.ItemCollection;
+import com.amazonaws.services.dynamodbv2.document.ScanOutcome;
+import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
-import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
-import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.uj.jane.dto.Airport;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-
-// Import log4j classes.
-//import org.apache.logging.log4j.Logger;
-//import org.apache.logging.log4j.LogManager;
-import pl.uj.jane.dto.Destination;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -40,8 +46,8 @@ public class CityConnectionsSearcher {
      * A library class representing a table from DynamoDB.
      */
     private static final Table table = dynamoDB.getTable("airportConnectionTable");
-
-//    private static final Logger LOGGER = LogManager.getLogger(CityConnectionsSearcher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CityConnectionsSearcher.class);
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Given an IATA code this method retrieves a record from a DynamoDB table by the code provided. Then it
@@ -49,28 +55,56 @@ public class CityConnectionsSearcher {
      * @param IATA The IATA code of the airport. Theoretically retrieved from "LinkedGeoData" service.
      * @return Returns an object of class Destination containing all information about the destination airport.
      */
-    public Destination RetrieveItem(String IATA) {
+//    public Destination RetrieveItem(String IATA) {
+    public List<Airport> findConnectionsFrom(String city) {
+        String outcomeJson = "";
+        List<String> destinationsIATA = Collections.emptyList();
+        ItemCollection<ScanOutcome> outcome = RetrieveItems("Municipality", city);
 
-        GetItemSpec spec = new GetItemSpec().withPrimaryKey("ID", 5);
-
-        try{
-            Item outcome = table.getItem(spec);
-            if (Objects.nonNull(outcome)){
-                Destination dest = new Destination();
-                dest.setIATA(IATA);
-                dest.setMunicipality(outcome.get("Municipality").toString());
-                dest.setLat(Double.parseDouble(outcome.get("Lat").toString()));
-                dest.setLong(Double.parseDouble(outcome.get("Long").toString()));
-                dest.setName(outcome.get("Name").toString());
-                return dest;
-            }
-        }catch (Exception e){
-//            LOGGER.error("An exception has occurred while retrieving an item:  ", e);
-            return null;
+        for (Item item : outcome) {
+            outcomeJson = item.toJSON();
+        }
+        try {
+            Airport homeAirport = objectMapper.readValue(outcomeJson, Airport.class);
+            destinationsIATA = Arrays.asList(homeAirport.getDestinationsIATA()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .split(","));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
 
-        return null;
+        List<Airport> destinationAirports = new ArrayList<>();
+        destinationsIATA.forEach(IATA -> destinationAirports.add(RetrieveItem(IATA)));
 
+        return destinationAirports;
     }
 
+    public Airport RetrieveItem(String IATA) {
+        GetItemSpec spec = new GetItemSpec().withPrimaryKey("IATA", IATA);
+        try {
+            Item item = table.getItem(spec);
+            if (Objects.nonNull(item)) {
+                return Airport.builder()
+                        .IATA(IATA)
+                        .municipality(item.get("Municipality").toString())
+                        .lat(Double.parseDouble(item.get("Lat").toString()))
+                        .lon(Double.parseDouble(item.get("Lon").toString()))
+                        .airportName(item.get("name").toString())
+                        .build();
+            }
+        } catch (Exception e) {
+            LOGGER.error("An exception has occurred while retrieving an item:  ", e);
+        }
+        return new Airport();
+    }
+
+    public ItemCollection<ScanOutcome> RetrieveItems(String attributeName, String value) {
+        Map<String, Object> expressionAttributeValues = new HashMap<String, Object>();
+        expressionAttributeValues.put(":v", value);
+
+        return table.scan(attributeName + " = :v",
+                "Municipality, Destinations_IATA, Lat, Lon, Airport_name, IATA",
+                null, expressionAttributeValues);
+    }
 }

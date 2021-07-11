@@ -1,7 +1,6 @@
 package pl.uj.jane.dto;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -28,6 +27,7 @@ public class Artist {
 
     /**
      * An overridden string representation of the Actor class for more convenient representation.
+     *
      * @return
      */
     @Override
@@ -48,6 +48,7 @@ public class Artist {
 
     /**
      * A constructor with given "id" and "name" fields taken from WikiData.
+     *
      * @param id
      * @param name
      */
@@ -69,7 +70,6 @@ public class Artist {
         }
 
         /**
-         *
          * @param vc
          */
         public ArtistDeserializer(Class<?> vc) {
@@ -78,7 +78,8 @@ public class Artist {
 
         /**
          * The method for conversion from JSON format taken from WikiData and Artist object.
-         * @param jp An object of JsonParser from "jackson" library.
+         *
+         * @param jp   An object of JsonParser from "jackson" library.
          * @param ctxt An object of DeserializationContext from "jackson" library.
          * @return Returns the deserialized version of Artist class.
          * @throws IOException
