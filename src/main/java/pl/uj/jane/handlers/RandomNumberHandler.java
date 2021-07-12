@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.document.ItemCollection;
 import com.amazonaws.services.dynamodbv2.document.ScanOutcome;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import pl.uj.jane.CityConnectionsSearcher;
 import pl.uj.jane.WeatherReader;
 import pl.uj.jane.WikiData;
@@ -31,6 +32,7 @@ public class RandomNumberHandler implements IntentRequestHandler {
         return true;
     }
 
+    @SneakyThrows
     @Override
     public Optional<Response> handle(HandlerInput handlerInput, IntentRequest intentRequest) {
 //        Destination dest = new CityConnectionsSearcher().RetrieveItem("AAL");
@@ -43,9 +45,11 @@ public class RandomNumberHandler implements IntentRequestHandler {
 //        System.out.println(geoList);
 
         CityConnectionsSearcher cityConnectionsSearcher = new CityConnectionsSearcher();
-        Airport airport = cityConnectionsSearcher.RetrieveItem("AAE");
-        ItemCollection<ScanOutcome> cities = cityConnectionsSearcher.RetrieveItems("Municipality", "Anapa");
-
+//        String airport = cityConnectionsSearcher.RetrieveItem("RYG");
+        Airport airport = cityConnectionsSearcher.RetrieveItem("RYG");
+        ItemCollection<ScanOutcome> cities = cityConnectionsSearcher.RetrieveItems("Municipality", "Kraków");
+        ObjectMapper objectMapper = new ObjectMapper();
+//        Airport test = objectMapper.readValue(airport, Airport.class);
         String json = "";
 
         Iterator<Item> iterator = cities.iterator();
@@ -53,7 +57,7 @@ public class RandomNumberHandler implements IntentRequestHandler {
             json = iterator.next().toJSON();
         }
 
-        ObjectMapper objectMapper = new ObjectMapper();
+
         List<String>  destinations = Collections.emptyList();
 
         try {
@@ -65,13 +69,13 @@ public class RandomNumberHandler implements IntentRequestHandler {
 
         String weather = new WeatherReader().checkWeather(airport.getLat(), airport.getLon());
         List<Artist> artists = new WikiData().queryWikiData(ARTISTS_LIST, Artist.class, TypeOfQuery.ARTISTS_LIST);
-        if (airport != null && weather != null) {
-            return handlerInput.getResponseBuilder().withSpeech("BAJO JAJO " + airport.getAirportName() + " " + weather + "WIKIDATA NUMBER OF FOUND ARTISTS" + artists.size() + " " + json + " " + destinations.get(0)).build();
-        } else if (weather == null) {
-            return handlerInput.getResponseBuilder().withSpeech("The weather response was empty").build();
-        } else if (weather == null) {
-            return handlerInput.getResponseBuilder().withSpeech("The location response was empty").build();
-        }
-        return handlerInput.getResponseBuilder().withSpeech("For some reason the end of the handler was reached.").build();
+//        if (airport != null && weather != null) {
+            return handlerInput.getResponseBuilder().withSpeech("BAJO JAJO " + airport + " \n" + "WIKIDATA NUMBER OF FOUND ARTISTS" + artists.size() + " " + json + " " + destinations.get(0)).build();
+//        } else if (weather == null) {
+//            return handlerInput.getResponseBuilder().withSpeech("The weather response was empty").build();
+//        } else if (weather == null) {
+//            return handlerInput.getResponseBuilder().withSpeech("The location response was empty").build();
+//        }
+//        return handlerInput.getResponseBuilder().withSpeech("For some reason the end of the handler was reached.").build();
     }
 }

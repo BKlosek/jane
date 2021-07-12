@@ -11,6 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Airport {
+    @JsonProperty("IATA")
     private final String IATA;
 
     @JsonProperty("Municipality")
@@ -35,5 +36,17 @@ public class Airport {
         this.lat = 0.0;
         this.lon = 0.0;
         this.destinationsIATA = "Unknown";
+    }
+
+    @Override
+    public String toString() {
+        return "Airport{" +
+                "IATA='" + IATA + '\'' +
+                ", municipality='" + municipality + '\'' +
+                ", airportName='" + airportName + '\'' +
+                ", lat=" + lat +
+                ", lon=" + lon +
+                ", destinationsIATA='" + destinationsIATA + '\'' +
+                '}';
     }
 }

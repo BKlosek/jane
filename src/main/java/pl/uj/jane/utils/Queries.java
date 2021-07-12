@@ -50,6 +50,6 @@ public class Queries {
             "PREFIX wikibase: <http://wikiba.se/ontology#>\n" +
             "SELECT (count(*) as ?count) " +
             "WHERE {?painting wdt:P31 wd:Q3305213. ?painting wdt:P276 ?location. ?location wdt:P625 ?coord. " +
-            "SERVICE wikibase:around {?location wdt:P625 ?localization. bd:serviceParam wikibase:center \"Point(%s %s)\"^^geo:wktLiteral. bd:serviceParam wikibase:radius \"50\". bd:serviceParam wikibase:distance ?distance.} " +
+            "SERVICE wikibase:around {?location wdt:P625 ?localization. bd:serviceParam wikibase:center \"Point(%s %s)\"^^geo:wktLiteral. bd:serviceParam wikibase:radius \"500\". bd:serviceParam wikibase:distance ?distance.} " +
             "SERVICE wikibase:label {bd:serviceParam wikibase:language \"en\" } }";
 }

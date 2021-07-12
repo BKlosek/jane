@@ -8,6 +8,8 @@ import com.amazon.ask.model.services.util.JacksonSerializer;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.util.IOUtils;
+import pl.uj.jane.CityConnectionsSearcher;
+import pl.uj.jane.WikiData;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +35,7 @@ public class JaneHandler implements RequestStreamHandler {
      * Default constructor defining a skill from the incoming request.
      */
     public JaneHandler() {
-        this.skill = new StandardSkillBuilder().addRequestHandler(new RandomNumberHandler()).addRequestHandler(new LaunchRequestHandlerImpl()).build();
+        this.skill = new StandardSkillBuilder().addRequestHandler(new ArtIntentHandler(new WikiData(), new CityConnectionsSearcher())).build();
         this.jacksonSerializer = new JacksonSerializer();
     }
 

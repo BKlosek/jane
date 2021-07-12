@@ -17,12 +17,11 @@ import pl.uj.jane.dto.Airport;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Class retrieving connections from  DynamoDB and searching for connections in the retrieved data
@@ -52,13 +51,13 @@ public class CityConnectionsSearcher {
     /**
      * Given an IATA code this method retrieves a record from a DynamoDB table by the code provided. Then it
      * converts the retrieved item into
+     *
      * @param IATA The IATA code of the airport. Theoretically retrieved from "LinkedGeoData" service.
      * @return Returns an object of class Destination containing all information about the destination airport.
      */
-//    public Destination RetrieveItem(String IATA) {
     public List<Airport> findConnectionsFrom(String city) {
         String outcomeJson = "";
-        List<String> destinationsIATA = Collections.emptyList();
+        List<String> destinationsIATA = new ArrayList<>();
         ItemCollection<ScanOutcome> outcome = RetrieveItems("Municipality", city);
 
         for (Item item : outcome) {
@@ -69,29 +68,29 @@ public class CityConnectionsSearcher {
             destinationsIATA = Arrays.asList(homeAirport.getDestinationsIATA()
                     .replace("[", "")
                     .replace("]", "")
+                    .replace("'", "")
                     .split(","));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
         List<Airport> destinationAirports = new ArrayList<>();
-        destinationsIATA.forEach(IATA -> destinationAirports.add(RetrieveItem(IATA)));
+
+        //Querying one item makes no sense, but it is correlated with DynamoDB free account's read limit
+        for (String IATA : destinationsIATA.stream().limit(1).collect(Collectors.toList())) {
+            destinationAirports.add(RetrieveItem(IATA));
+        }
 
         return destinationAirports;
     }
 
     public Airport RetrieveItem(String IATA) {
-        GetItemSpec spec = new GetItemSpec().withPrimaryKey("IATA", IATA);
+        GetItemSpec spec = new GetItemSpec().withPrimaryKey("IATA", IATA)
+                .withProjectionExpression("Municipality, Destinations_IATA, Lat, Lon, Airport_name, IATA");
         try {
             Item item = table.getItem(spec);
             if (Objects.nonNull(item)) {
-                return Airport.builder()
-                        .IATA(IATA)
-                        .municipality(item.get("Municipality").toString())
-                        .lat(Double.parseDouble(item.get("Lat").toString()))
-                        .lon(Double.parseDouble(item.get("Lon").toString()))
-                        .airportName(item.get("name").toString())
-                        .build();
+                return objectMapper.readValue(item.toJSON(), Airport.class);
             }
         } catch (Exception e) {
             LOGGER.error("An exception has occurred while retrieving an item:  ", e);

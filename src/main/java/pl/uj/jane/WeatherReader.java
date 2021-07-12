@@ -22,7 +22,7 @@ public class WeatherReader {
 //        );
     }
 
-    public String checkWeather(double lat, double lon){
+    public static String checkWeather(double lat, double lon){
         String urlString = "http://api.openweathermap.org/data/2.5/forecast?lat=" + lat + "&lon=" + lon + "&appid=efc04d1cadba4ca9e5cac19ee685b876&units=metric";
 //        String urlString = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&appid=efc04d1cadba4ca9e5cac19ee685b876&units=metric";
         try{
@@ -52,32 +52,32 @@ public class WeatherReader {
         return null;
     }
 
-    public double checkWeatherScore(double lat, double lon){
+    public static double checkWeatherScore(double lat, double lon){
 
         String weatherState = checkWeather(lat, lon);
 
         double score = 0;
 
         switch (weatherState){
-            case "Clear":
+            case "CLEAR":
                 score += 0.02;
                 break;
-            case "Clouds":
+            case "CLOUDS":
                 score += 0.01;
                 break;
-            case "Atmosphere":
+            case "ATMOSPHERE":
                 score -= 0.002;
                 break;
-            case "Drizzle":
+            case "DRIZZLE":
                 score -= 0.004;
                 break;
-            case "Snow":
+            case "SNOW":
                 score -= 0.006;
                 break;
-            case "Rain":
+            case "RAIN":
                 score -= 0.0125;
                 break;
-            case "Thunderstorm":
+            case "THUNDERSTORM":
                 score -= 0.02;
                 break;
         }

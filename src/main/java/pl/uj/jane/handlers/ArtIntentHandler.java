@@ -6,6 +6,8 @@ import com.amazon.ask.model.IntentRequest;
 import com.amazon.ask.model.Response;
 import com.amazon.ask.model.Slot;
 import lombok.AllArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pl.uj.jane.CityConnectionsSearcher;
 import pl.uj.jane.WikiData;
 import pl.uj.jane.dto.Airport;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.amazon.ask.request.Predicates.requestType;
+import static pl.uj.jane.WeatherReader.checkWeatherScore;
 import static pl.uj.jane.utils.Queries.UNKNOWN_ART_INTENT;
 import static pl.uj.jane.utils.Queries.fillQueryWithParameters;
 
@@ -29,7 +32,7 @@ public class ArtIntentHandler implements IntentRequestHandler {
 
     private final WikiData wikiData;
     private final CityConnectionsSearcher cityConnectionsSearcher;
-
+    private static final Logger logger = LogManager.getLogger(ArtIntentHandler.class);
 
     /**
      * Jane intent handlers need to have a method checking if the input can be handled by thin intent.
@@ -41,7 +44,7 @@ public class ArtIntentHandler implements IntentRequestHandler {
     @Override
     public boolean canHandle(HandlerInput handlerInput, IntentRequest intentRequest) {
         return handlerInput.matches(requestType(IntentRequest.class)) &&
-                intentRequest.getIntent().getName().equals("cuisine");
+                intentRequest.getIntent().getName().equals("art");
     }
 
     /**
@@ -55,36 +58,39 @@ public class ArtIntentHandler implements IntentRequestHandler {
     public Optional<Response> handle(HandlerInput handlerInput, IntentRequest intentRequest) {
         String response = handleArtIntent(intentRequest);
         return handlerInput.getResponseBuilder()
-                .withSpeech("Hi, I am in "
-                        + intentRequest.getIntent().getName()
-                        + " intent and I am looking for "
-                        + intentRequest.getIntent().getSlots().toString())
+                .withSpeech(response)
                 .build();
     }
 
     private String handleArtIntent(IntentRequest intentRequest) {
-        Slot painterSlot = intentRequest.getIntent().getSlots().get("painter");
-        Slot artMovementSlot = intentRequest.getIntent().getSlots().get("artMovement");
-        Optional<String> artist = Optional.ofNullable(painterSlot.getValue());
-        Optional<String> artMovement = Optional.ofNullable(artMovementSlot.getValue());
-
+//        Slot painterSlot = intentRequest.getIntent().getSlots().get("painter");
+//        Slot artMovementSlot = intentRequest.getIntent().getSlots().get("artMovement");
+        Slot citySlot = intentRequest.getIntent().getSlots().get("city");
+//        Optional<String> artist = Optional.ofNullable(painterSlot.getValue());
+//        Optional<String> artMovement = Optional.ofNullable(artMovementSlot.getValue());
+        Optional<String> city = Optional.ofNullable(citySlot.getValue());
 //        if (artist.isPresent()) {
 //            return handlePainter(artist.get());
 //        } else if (artMovement.isPresent()) {
 //            return handleArtMovement();
 //        }
 //        else {
-        handleUnknownArtIntent();
+        if (city.isPresent()) {
+            return handleUnknownArtIntent(city.get());
+        } else {
+            return handleUnknownArtIntent("Oslo");
+        }
 //        }
 
-        return "";
+//        return "";
     }
 
-    private String handleUnknownArtIntent() {
-        List<Airport> destinationsFromCity = cityConnectionsSearcher.findConnectionsFrom("Kraków");
+    private String handleUnknownArtIntent(String city) {
+        List<Airport> destinationsFromCity = cityConnectionsSearcher.findConnectionsFrom(city);
         List<LocationWithQuantity> locationsWithQuantity = new ArrayList<>();
 
         destinationsFromCity.forEach(destinationFromCity -> {
+            logger.info("destinationFromCity lat lon: " + destinationFromCity.getLat() + " " + destinationFromCity.getLon());
             List<Integer> count = wikiData.queryWikiData(fillQueryWithParameters(UNKNOWN_ART_INTENT,
                     destinationFromCity.getLat(), destinationFromCity.getLon()),
                     Integer.class, TypeOfQuery.UNKNOWN_ART_INTENT);
@@ -97,8 +103,19 @@ public class ArtIntentHandler implements IntentRequestHandler {
             locationsWithQuantity.add(locationWithQuantity);
         });
 
-        //TRZEBA SPRAWDZIC POGODE, ogolnie dokonczyc ten przyapdek
-        return "";
+        int bestScore = Integer.MIN_VALUE;
+        LocationWithQuantity bestLocation = new LocationWithQuantity();
+        for (LocationWithQuantity locationWithQuantity : locationsWithQuantity) {
+            int quantity = locationWithQuantity.getQuantity();
+            double lat = locationWithQuantity.getLat();
+            double lon = locationWithQuantity.getLon();
+            double score = checkWeatherScore(lat, lon) * (locationWithQuantity.getQuantity() + 1) + quantity;
+            if (score > bestScore) {
+                bestLocation = locationWithQuantity;
+            }
+        }
+
+        return "To discover more about art, you should travel to " + bestLocation.getMunicipality() + " where you'll find more than " + bestLocation.getQuantity() + " of masterpieces.";
     }
 
 //    private String handleArtMovement() {
