@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
+
 /**
  * Class retrieving connections from  DynamoDB and searching for connections in the retrieved data
  */
@@ -85,16 +87,23 @@ public class CityConnectionsSearcher {
     }
 
     public Airport RetrieveItem(String IATA) {
+        System.out.println("IATA " + IATA);
         GetItemSpec spec = new GetItemSpec().withPrimaryKey("IATA", IATA)
                 .withProjectionExpression("Municipality, Destinations_IATA, Lat, Lon, Airport_name, IATA");
         try {
+            System.out.println("Try get Item");
             Item item = table.getItem(spec);
+            System.out.println("Got Item");
             if (Objects.nonNull(item)) {
+                System.out.println(item.toJSON());
+                System.out.println(item.toJSON());
                 return objectMapper.readValue(item.toJSON(), Airport.class);
             }
         } catch (Exception e) {
+            System.out.println(format("An exception has occurred while retrieving an item:  %s", e.getMessage()));
             LOGGER.error("An exception has occurred while retrieving an item:  ", e);
         }
+        System.out.println("Default constructor");
         return new Airport();
     }
 

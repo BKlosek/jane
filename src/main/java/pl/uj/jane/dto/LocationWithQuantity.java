@@ -14,10 +14,10 @@ import java.io.IOException;
 @Getter
 public class LocationWithQuantity {
 
-    private final String municipality;
-    private final double lat;
-    private final double lon;
-    private final int quantity;
+    private String municipality;
+    private double lat;
+    private double lon;
+    private int quantity;
 
     @Override
     public String toString() {

@@ -12,22 +12,22 @@ import lombok.Getter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Airport {
     @JsonProperty("IATA")
-    private final String IATA;
+    private String IATA;
 
     @JsonProperty("Municipality")
-    private final String municipality;
+    private String municipality;
 
     @JsonProperty("Airport_name")
-    private final String airportName;
+    private String airportName;
 
     @JsonProperty("Lat")
-    private final double lat;
+    private double lat;
 
     @JsonProperty("Lon")
-    private final double lon;
+    private double lon;
 
     @JsonProperty("Destinations_IATA")
-    private final String destinationsIATA;
+    private String destinationsIATA;
 
     public Airport() {
         this.IATA = "Unknown";
