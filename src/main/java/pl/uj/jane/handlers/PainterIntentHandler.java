@@ -23,17 +23,13 @@ import java.util.Set;
 
 import static com.amazon.ask.request.Predicates.requestType;
 import static pl.uj.jane.WeatherReader.checkWeatherScore;
-import static pl.uj.jane.utils.Queries.ART_MOVEMENTS_LIST;
-import static pl.uj.jane.utils.Queries.ART_MOVEMENT_INTENT;
+import static pl.uj.jane.utils.Queries.ARTISTS_LIST;
+import static pl.uj.jane.utils.Queries.ARTIST_INTENT;
 import static pl.uj.jane.utils.Queries.UNKNOWN_ART_INTENT;
 import static pl.uj.jane.utils.Queries.fillQueryWithParameters;
 
-/**
- * Mock class to handle Art intent from Jane.
- */
-
 @AllArgsConstructor
-public class ArtIntentHandler implements IntentRequestHandler {
+public class PainterIntentHandler implements IntentRequestHandler {
 
     public static final String CITY = "city";
     public static final String PAINTER = "painter";
@@ -52,7 +48,7 @@ public class ArtIntentHandler implements IntentRequestHandler {
     @Override
     public boolean canHandle(HandlerInput handlerInput, IntentRequest intentRequest) {
         return handlerInput.matches(requestType(IntentRequest.class)) &&
-                intentRequest.getIntent().getName().equals("art");
+                intentRequest.getIntent().getName().equals("painter");
     }
 
     /**
@@ -78,22 +74,23 @@ public class ArtIntentHandler implements IntentRequestHandler {
 
         if (slotsNames.contains(CITY)) {
             String city = slotNameToSlot.get(CITY).getValue();
-//            if (slotsNames.contains(PAINTER)) {
-//                String painter = slotNameToSlot.get(PAINTER).getValue();
-//                return handlePainter(painter);
-            if (slotsNames.contains(ART_MOVEMENT)) {
-                String artMovement = slotNameToSlot.get(ART_MOVEMENT).getValue();
-                System.out.println(artMovement);
-                return handleArtMovement(city, artMovement);
+            if (slotsNames.contains(PAINTER)) {
+                String painter = slotNameToSlot.get(PAINTER).getValue();
+                return handlePainter(city, painter);
+//            if (slotsNames.contains(ART_MOVEMENT)) {
+//                String artMovement = slotNameToSlot.get(ART_MOVEMENT).getValue();
+//                System.out.println(artMovement);
+//                return handleArtMovement(city, artMovement);
             } else {
-                return handleUnknownArtIntent(city);
+//                return handleUnknownPainter(city);
+                return "Couldn't recognize this painter or if it was provided at all";
             }
         } else {
             return "Something went wrong, I can't find the city you want to leave";
         }
     }
 
-    private String handleUnknownArtIntent(String city) {
+    private String handleUnknownPainter(String city) {
         List<Airport> destinationsFromCity = cityConnectionsSearcher.findConnectionsFrom(city);
         List<LocationWithQuantity> locationsWithQuantity = new ArrayList<>();
 
@@ -116,20 +113,20 @@ public class ArtIntentHandler implements IntentRequestHandler {
                 " where you'll find more than " + bestLocation.getQuantity() + " of masterpieces.";
     }
 
-    private String handleArtMovement(String city, String artMovementName) {
+    private String handlePainter(String city, String painter) {
         List<LocationWithQuantity> filteredLocationsWithQuantity = new ArrayList<>();
         List<Airport> allAvailableDestinationsFromCity = cityConnectionsSearcher.findConnectionsFrom(city);
         System.out.println(Arrays.toString(allAvailableDestinationsFromCity.toArray()));
 
-        List<ArtMovement> artMovements = wikiData.queryWikiData(ART_MOVEMENTS_LIST, ArtMovement.class, TypeOfQuery.ART_MOVEMENTS_LIST);
-        System.out.println(Arrays.toString(artMovements.toArray()));
+        List<ArtMovement> painters = wikiData.queryWikiData(ARTISTS_LIST, ArtMovement.class, TypeOfQuery.ART_MOVEMENTS_LIST);
+        System.out.println(Arrays.toString(painters.toArray()));
 
-        Optional<ArtMovement> wantedArtMovement = artMovements.stream().filter(artMovement -> artMovement.name.equalsIgnoreCase(artMovementName)).findFirst();
-        System.out.println(wantedArtMovement);
+        Optional<ArtMovement> wantedPainter = painters.stream().filter(artMovement -> artMovement.name.equalsIgnoreCase(painter)).findFirst();
+        System.out.println(wantedPainter);
 
-        if (wantedArtMovement.isPresent()) {
-            System.out.println(wantedArtMovement);
-            List<LocationWithQuantity> allAvailableLocationsWithQuantity = wikiData.queryWikiData(fillQueryWithParameters(ART_MOVEMENT_INTENT, wantedArtMovement.get().id), LocationWithQuantity.class, TypeOfQuery.ART_MOVEMENT_INTENT);
+        if (wantedPainter.isPresent()) {
+            System.out.println(wantedPainter);
+            List<LocationWithQuantity> allAvailableLocationsWithQuantity = wikiData.queryWikiData(fillQueryWithParameters(ARTIST_INTENT, wantedPainter.get().id), LocationWithQuantity.class, TypeOfQuery.ART_MOVEMENT_INTENT);
             System.out.println(Arrays.toString(allAvailableLocationsWithQuantity.toArray()));
 
             allAvailableLocationsWithQuantity.forEach(locationWithQuantity -> {
@@ -149,7 +146,7 @@ public class ArtIntentHandler implements IntentRequestHandler {
             System.out.println(Arrays.toString(filteredLocationsWithQuantity.toArray()));
 
             LocationWithQuantity bestLocation = getBestLocationBasedOnWeather(filteredLocationsWithQuantity);
-            return "To discover more about " + artMovementName + ", you should travel to " + bestLocation.getMunicipality() +
+            return "To discover more about " + painter + ", you should travel to " + bestLocation.getMunicipality() +
                     " where you'll find more than " + bestLocation.getQuantity() + " paintings of this movement.";
         }
 

@@ -52,4 +52,19 @@ public class Queries {
             "WHERE {?painting wdt:P31 wd:Q3305213. ?painting wdt:P276 ?location. ?location wdt:P625 ?coord. " +
             "SERVICE wikibase:around {?location wdt:P625 ?localization. bd:serviceParam wikibase:center \"Point(%s %s)\"^^geo:wktLiteral. bd:serviceParam wikibase:radius \"500\". bd:serviceParam wikibase:distance ?distance.} " +
             "SERVICE wikibase:label {bd:serviceParam wikibase:language \"en\" } }";
+
+//    public static final String UNKNOWN_PAINTER_INTENT = "PREFIX wdt: <http://www.wikidata.org/prop/direct/>\n" +
+//            "PREFIX geo: <http://www.opengis.net/ont/geosparql#>\n" +
+//            "PREFIX wd: <http://www.wikidata.org/entity/>\n" +
+//            "PREFIX bd: <http://www.bigdata.com/rdf#>\n" +
+//            "PREFIX wikibase: <http://wikiba.se/ontology#>\n" +
+//            "SELECT ?coord (count(*) as ?count) " +
+//            "WHERE { ?painting wdt:P31 wd:Q3305213 . ?painting wdt:P276 ?location . ?painting wdt:P170 wd:. ?location wdt:P625 ?coord " +
+//            "SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\" }} " +
+//            "GROUP BY ?coord ORDER BY DESC(?count)";
+//            "SELECT (count(*) as ?count) " +
+//            "WHERE {?painting wdt:P31 wd:Q3305213. ?painting wdt:P276 ?location. ?location wdt:P625 ?coord. " +
+//            "SERVICE wikibase:around {?location wdt:P625 ?localization. bd:serviceParam wikibase:center \"Point(%s %s)\"^^geo:wktLiteral. bd:serviceParam wikibase:radius \"500\". bd:serviceParam wikibase:distance ?distance.} " +
+//            "SERVICE wikibase:label {bd:serviceParam wikibase:language \"en\" } }";
+
 }

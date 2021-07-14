@@ -35,7 +35,10 @@ public class JaneHandler implements RequestStreamHandler {
      * Default constructor defining a skill from the incoming request.
      */
     public JaneHandler() {
-        this.skill = new StandardSkillBuilder().addRequestHandler(new ArtIntentHandler(new WikiData(), new CityConnectionsSearcher())).build();
+        this.skill = new StandardSkillBuilder()
+                .addRequestHandler(new ArtIntentHandler(new WikiData(), new CityConnectionsSearcher()))
+                .addRequestHandler(new PainterIntentHandler(new WikiData(), new CityConnectionsSearcher()))
+                .build();
         this.jacksonSerializer = new JacksonSerializer();
     }
 

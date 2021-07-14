@@ -37,7 +37,7 @@ public class CityConnectionsSearcher {
      * to be installed prior.
      */
     private static final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
-            .withRegion(Regions.US_EAST_1).build();
+            .withRegion(Regions.US_EAST_2).build();
     /**
      * A library class specific for DynamoDB connection on AWS.
      */
@@ -65,6 +65,7 @@ public class CityConnectionsSearcher {
         for (Item item : outcome) {
             outcomeJson = item.toJSON();
         }
+
         try {
             Airport homeAirport = objectMapper.readValue(outcomeJson, Airport.class);
             destinationsIATA = Arrays.asList(homeAirport.getDestinationsIATA()
@@ -77,6 +78,8 @@ public class CityConnectionsSearcher {
         }
 
         List<Airport> destinationAirports = new ArrayList<>();
+
+        System.out.println("Airports available from the given one: " + destinationsIATA);
 
         //Querying one item makes no sense, but it is correlated with DynamoDB free account's read limit
         for (String IATA : destinationsIATA.stream().limit(1).collect(Collectors.toList())) {
