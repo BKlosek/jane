@@ -13,7 +13,7 @@ public class Queries {
             "PREFIX wd: <http://www.wikidata.org/entity/>\n" +
             "PREFIX bd: <http://www.bigdata.com/rdf#>\n" +
             "PREFIX wikibase: <http://wikiba.se/ontology#>\n" +
-            "SELECT DISTINCT ?artistLabel ?artist WHERE { ?artist wdt:P106 wd:Q1028181. SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\" } } limit 20";
+            "SELECT DISTINCT ?artistLabel ?artist WHERE { ?artist wdt:P106 wd:Q1028181. SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\" } } limit 2000";
 
     public static final String ART_MOVEMENTS_LIST = "PREFIX wdt: <http://www.wikidata.org/prop/direct/>\n" +
             "PREFIX wd: <http://www.wikidata.org/entity/>\n" +

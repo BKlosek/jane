@@ -6,11 +6,11 @@ import com.amazon.ask.model.IntentRequest;
 import com.amazon.ask.model.Response;
 import com.amazon.ask.model.Slot;
 import lombok.AllArgsConstructor;
-import org.apache.jena.base.Sys;
 import pl.uj.jane.CityConnectionsSearcher;
 import pl.uj.jane.WikiData;
 import pl.uj.jane.dto.Airport;
 import pl.uj.jane.dto.ArtMovement;
+import pl.uj.jane.dto.Artist;
 import pl.uj.jane.dto.LocationWithQuantity;
 import pl.uj.jane.utils.TypeOfQuery;
 
@@ -23,6 +23,8 @@ import java.util.Set;
 
 import static com.amazon.ask.request.Predicates.requestType;
 import static pl.uj.jane.WeatherReader.checkWeatherScore;
+import static pl.uj.jane.utils.Queries.ARTISTS_LIST;
+import static pl.uj.jane.utils.Queries.ARTIST_INTENT;
 import static pl.uj.jane.utils.Queries.ART_MOVEMENTS_LIST;
 import static pl.uj.jane.utils.Queries.ART_MOVEMENT_INTENT;
 import static pl.uj.jane.utils.Queries.UNKNOWN_ART_INTENT;
@@ -36,7 +38,7 @@ import static pl.uj.jane.utils.Queries.fillQueryWithParameters;
 public class ArtIntentHandler implements IntentRequestHandler {
 
     public static final String CITY = "city";
-    public static final String PAINTER = "painter";
+    public static final String ARTIST = "artist";
     public static final String ART_MOVEMENT = "artMovement";
 
     private final WikiData wikiData;
@@ -76,9 +78,10 @@ public class ArtIntentHandler implements IntentRequestHandler {
 
         if (slotsNames.contains(CITY)) {
             String city = slotNameToSlot.get(CITY).getValue();
-//            if (slotsNames.contains(PAINTER)) {
-//                String painter = slotNameToSlot.get(PAINTER).getValue();
-//                return handlePainter(painter);
+            if (slotsNames.contains(ARTIST)) {
+                String artist = slotNameToSlot.get(ARTIST).getValue();
+                return handleArtist(city, artist);
+            }
             if (slotsNames.contains(ART_MOVEMENT)) {
                 String artMovement = slotNameToSlot.get(ART_MOVEMENT).getValue();
                 System.out.println(artMovement);
@@ -115,7 +118,7 @@ public class ArtIntentHandler implements IntentRequestHandler {
     }
 
     private String handleArtMovement(String city, String artMovementName) {
-        List<LocationWithQuantity> filteredLocationsWithQuantity = new ArrayList<>();
+        List<LocationWithQuantity> filteredLocationsWithQuantity;
         List<Airport> allAvailableDestinationsFromCity = cityConnectionsSearcher.findConnectionsFrom(city);
         System.out.println(Arrays.toString(allAvailableDestinationsFromCity.toArray()));
 
@@ -130,19 +133,7 @@ public class ArtIntentHandler implements IntentRequestHandler {
             List<LocationWithQuantity> allAvailableLocationsWithQuantity = wikiData.queryWikiData(fillQueryWithParameters(ART_MOVEMENT_INTENT, wantedArtMovement.get().id), LocationWithQuantity.class, TypeOfQuery.ART_MOVEMENT_INTENT);
             System.out.println(Arrays.toString(allAvailableLocationsWithQuantity.toArray()));
 
-            allAvailableLocationsWithQuantity.forEach(locationWithQuantity -> {
-                if (filteredLocationsWithQuantity.size() < 50) {
-                    allAvailableDestinationsFromCity.forEach(destination -> {
-                        if (Math.sqrt(Math.pow(destination.getLat() - locationWithQuantity.getLat(), 2)
-                                + Math.pow(destination.getLon() - locationWithQuantity.getLon(), 2)) * 68.1 < 20) {
-                            filteredLocationsWithQuantity.add(new LocationWithQuantity(destination.getMunicipality(),
-                                    destination.getLat(),
-                                    destination.getLon(),
-                                    locationWithQuantity.getQuantity()));
-                        }
-                    });
-                }
-            });
+            filteredLocationsWithQuantity = filterLocationsBasedOnDistance(allAvailableDestinationsFromCity, allAvailableLocationsWithQuantity);
 
             System.out.println(Arrays.toString(filteredLocationsWithQuantity.toArray()));
 
@@ -154,12 +145,54 @@ public class ArtIntentHandler implements IntentRequestHandler {
         return "Something went wrong, I can't find the art movement you want to discover";
     }
 
-//    private String handlePainter(String artistName) {
-//        List<Artist> artists = wikiData.queryWikiData(ARTISTS_LIST, Artist.class, TypeOfQuery.ARTISTS_LIST);
-//        Optional<Artist> wantedArtist = artists.stream().filter(artist -> artist.name.equals(artistName)).findFirst();
-//        List<String> destinationsFromCity = cityConnectionsSearcher.findConnectionsFrom("Kraków");
-//        return "";
-//    }
+    private String handleArtist(String city, String artistName) {
+        List<LocationWithQuantity> filteredLocationsWithQuantity;
+        List<Airport> allAvailableDestinationsFromCity = cityConnectionsSearcher.findConnectionsFrom(city);
+        System.out.println(Arrays.toString(allAvailableDestinationsFromCity.toArray()));
+
+        List<Artist> artists = wikiData.queryWikiData(ARTISTS_LIST, Artist.class, TypeOfQuery.ARTISTS_LIST);
+        System.out.println(Arrays.toString(artists.toArray()));
+
+        Optional<Artist> wantedArtist = artists.stream().filter(artist -> artist.name.equalsIgnoreCase(artistName)).findFirst();
+        System.out.println(wantedArtist);
+
+        if (wantedArtist.isPresent()) {
+            System.out.println(wantedArtist);
+
+            List<LocationWithQuantity> allAvailableLocationsWithQuantity = wikiData.queryWikiData(fillQueryWithParameters(ARTIST_INTENT, wantedArtist.get().id), LocationWithQuantity.class, TypeOfQuery.ARTIST_INTENT);
+
+            System.out.println(Arrays.toString(allAvailableLocationsWithQuantity.toArray()));
+
+            filteredLocationsWithQuantity = filterLocationsBasedOnDistance(allAvailableDestinationsFromCity, allAvailableLocationsWithQuantity);
+
+            System.out.println(Arrays.toString(filteredLocationsWithQuantity.toArray()));
+
+            LocationWithQuantity bestLocation = getBestLocationBasedOnWeather(filteredLocationsWithQuantity);
+            return "You should travel to " + bestLocation.getMunicipality() + " where there are over " + bestLocation.getQuantity() + " masterpieces of " + artistName + ".";
+        }
+
+        return "Something went wrong, I can't find the artist you want to discover";
+    }
+
+    private List<LocationWithQuantity> filterLocationsBasedOnDistance(List<Airport> allAvailableDestinationsFromCity, List<LocationWithQuantity> allAvailableLocationsWithQuantity) {
+        List<LocationWithQuantity> filteredLocationsWithQuantity = new ArrayList<>();
+
+        allAvailableLocationsWithQuantity.forEach(locationWithQuantity -> {
+            if (filteredLocationsWithQuantity.size() < 50) {
+                allAvailableDestinationsFromCity.forEach(destination -> {
+                    if (Math.sqrt(Math.pow(destination.getLat() - locationWithQuantity.getLat(), 2)
+                            + Math.pow(destination.getLon() - locationWithQuantity.getLon(), 2)) * 68.1 < 20) {
+                        filteredLocationsWithQuantity.add(new LocationWithQuantity(destination.getMunicipality(),
+                                destination.getLat(),
+                                destination.getLon(),
+                                locationWithQuantity.getQuantity()));
+                    }
+                });
+            }
+        });
+
+        return filteredLocationsWithQuantity;
+    }
 
     private LocationWithQuantity getBestLocationBasedOnWeather(List<LocationWithQuantity> locationsWithQuantity) {
         int bestScore = Integer.MIN_VALUE;
