@@ -32,7 +32,7 @@ import static pl.uj.jane.utils.Queries.fillQueryWithParameters;
 public class PainterIntentHandler implements IntentRequestHandler {
 
     public static final String CITY = "city";
-    public static final String PAINTER = "painter";
+    public static final String PAINTER = "artist";
     public static final String ART_MOVEMENT = "artMovement";
 
     private final WikiData wikiData;
@@ -74,8 +74,10 @@ public class PainterIntentHandler implements IntentRequestHandler {
 
         if (slotsNames.contains(CITY)) {
             String city = slotNameToSlot.get(CITY).getValue();
+            System.out.println("Found city slot: " + city);
             if (slotsNames.contains(PAINTER)) {
                 String painter = slotNameToSlot.get(PAINTER).getValue();
+                System.out.println("Found painter slot: " + painter);
                 return handlePainter(city, painter);
 //            if (slotsNames.contains(ART_MOVEMENT)) {
 //                String artMovement = slotNameToSlot.get(ART_MOVEMENT).getValue();
